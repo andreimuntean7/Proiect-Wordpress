@@ -1,0 +1,24 @@
+---
+- name: Set up machine
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create user andmu
+      ansible.builtin.user:
+        name: andmu
+        group: admin
+        password: "{{  pass | password_hash('sha512') }}"
+
+    - name: PasswordAuthentication yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication no"
+        state: present
+        line: "PasswordAuthentication yes"
+        backup: yes
+
+    - name: Restart sshd service
+      service:
+        name: sshd
+        state: restarted
