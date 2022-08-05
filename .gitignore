@@ -6,3 +6,4 @@
 
 #Ansible
 *.retry
+kubernetes-master/Vagrant/credentials.yaml

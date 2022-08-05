@@ -1,18 +1,27 @@
-Vagrant.configure(2) do |config|
-  config.vm.define 'kubernetes-master' do |vm|
-    vm.vm.box = 'ubuntu/focal64'
-    vm.vm.network 'public_network', ip: '192.168.68.30', bridge: 'Realtek Gaming GbE Family Controller'
-    vm.vm.hostname = 'kubernetes-master'
-    vm.vm.provider 'virtualbox' do |v|
-      v.name = 'kubernetes-master'
-      v.memory = 4096
-      v.cpus = 2
+require 'base64'
+
+if File.exist?('credentials.yaml')
+  require 'yaml'
+  vars = YAML.load(File.open('credentials.yaml'))
+  pass = Base64.decode64(vars['pass'])
+  bridge_adapter = vars['bridge_adapter']
+
+  Vagrant.configure(2) do |config|
+    config.vm.define 'kubernetes-master' do |vm|
+      vm.vm.box = 'ubuntu/focal64'
+      vm.vm.network 'public_network', ip: '192.168.68.30', bridge: bridge_adapter
+      vm.vm.hostname = 'kubernetes-master'
+      vm.vm.provider 'virtualbox' do |v|
+        v.name = 'kubernetes-master'
+        v.memory = 4096
+        v.cpus = 2
+      end
     end
-  end
-  config.vm.provision 'ansible_local' do |ansible|
-    ansible.playbook = './Ansible/setup.yaml'
-    ansible.extra_vars = {
-      pass: 'root'
-    }
+    config.vm.provision 'ansible_local' do |ansible|
+      ansible.playbook = './Ansible/setup.yaml'
+      ansible.extra_vars = {
+        pass: pass
+      }
+    end
   end
 end
